@@ -8,6 +8,8 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 
+load_dotenv()
+
 coins = ['BTC-USD', 'ETH-USD', 'USDT-USD', 'SOL-USD', 'BNB-USD']
 
 conf = {
@@ -49,11 +51,13 @@ async def produce(data):
     # The actual async function to run the callback
     async def async_ack_callback_async(err, msg):
         await loop.run_in_executor(None, acked, err, msg)
-
-    for crypto in data:
-        json_dump = json.dumps(crypto)
-        producer.produce(topic, key=crypto['base'], value=json_dump.encode('utf-8'), callback=async_ack_callback)
-    producer.flush()
+    
+    while True:
+        for crypto in data:
+            json_dump = json.dumps(crypto)
+            producer.produce(topic, key=crypto['base'], value=json_dump.encode('utf-8'), callback=async_ack_callback)
+        producer.flush()
+        await asyncio.sleep(1)
 
 async def main():
     prices = await crypto_prices(coins)
