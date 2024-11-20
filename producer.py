@@ -13,7 +13,7 @@ load_dotenv()
 coins = ['BTC-USD', 'ETH-USD', 'USDT-USD', 'SOL-USD', 'BNB-USD']
 
 conf = {
-    'bootstrap.servers': 'localhost:9092',
+    'bootstrap.servers': os.environ.get('BOOTSTRAP_SERVERS'),
     'client.id': socket.gethostname(),
 }
 
@@ -57,7 +57,7 @@ async def produce(data):
             json_dump = json.dumps(crypto)
             producer.produce(topic, key=crypto['base'], value=json_dump.encode('utf-8'), callback=async_ack_callback)
         producer.flush()
-        await asyncio.sleep(1)
+        await asyncio.sleep(5)
 
 async def main():
     prices = await crypto_prices(coins)
@@ -66,6 +66,7 @@ async def main():
 if __name__ == '__main__':
     import time 
     start = time.perf_counter()
+
     print("start: {}".format(start))
     asyncio.run(main())
     end = time.perf_counter() - start
